@@ -42,7 +42,7 @@ if(NOT GMock_FOUND)
   list(APPEND GMOCK_INCLUDE_DIRS ${GTEST_INCLUDE_DIRS})
 
   if(NOT GMOCK_LIBRARIES)
-    # If no system-wide gmock found, then find src version.
+    # If no system-wide gmock found, then find cartographer_build version.
     # Ubuntu might have this.
     find_path(GMOCK_SRC_DIR src/gmock.cc
       HINTS
@@ -52,7 +52,7 @@ if(NOT GMock_FOUND)
         /usr/src/gmock
     )
     if(GMOCK_SRC_DIR)
-      # If src version found, build it.
+      # If cartographer_build version found, build it.
       if(NOT TARGET gmock)
         add_subdirectory(${GMOCK_SRC_DIR} "${CMAKE_CURRENT_BINARY_DIR}/gmock"
           EXCLUDE_FROM_ALL)
