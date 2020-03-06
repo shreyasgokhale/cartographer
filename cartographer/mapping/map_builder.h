@@ -67,6 +67,10 @@ class MapBuilder : public MapBuilderInterface {
   std::map<int, int> LoadStateFromFile(const std::string &filename,
                                        const bool load_frozen_state) override;
 
+  std::map<int, int> GetRemoteState(io::ProtoStreamReaderInterface* reader,
+                                      bool load_frozen_state,
+                                      const std::string& remote_address);
+
   mapping::PoseGraphInterface *pose_graph() override {
     return pose_graph_.get();
   }

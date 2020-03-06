@@ -51,6 +51,9 @@ class MockMapBuilder : public mapping::MapBuilderInterface {
   MOCK_METHOD2(SerializeStateToFile, bool(bool, const std::string &));
   MOCK_METHOD2(LoadState,
                std::map<int, int>(io::ProtoStreamReaderInterface *, bool));
+  MOCK_METHOD3(GetRemoteState,
+             std::map<int, int>(io::ProtoStreamReaderInterface*, bool, const std::string & ));
+
   MOCK_METHOD2(LoadStateFromFile,
                std::map<int, int>(const std::string &, bool));
   MOCK_CONST_METHOD0(num_trajectory_builders, int());

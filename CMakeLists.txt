@@ -211,12 +211,14 @@ google_binary(cartographer_print_configuration
 )
 
 if(${BUILD_GRPC})
+
   google_binary(cartographer_grpc_server
     SRCS
       cartographer/cloud/map_builder_server_main.cc
   )
   target_link_libraries(cartographer_grpc_server PUBLIC grpc++)
   target_link_libraries(cartographer_grpc_server PUBLIC async_grpc)
+
   if(${BUILD_PROMETHEUS})
     target_link_libraries(cartographer_grpc_server PUBLIC ${ZLIB_LIBRARIES})
     target_link_libraries(cartographer_grpc_server PUBLIC prometheus-cpp-core)

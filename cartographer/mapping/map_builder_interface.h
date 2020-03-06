@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef CARTOGRAPHER_MAPPING_MAP_BUILDER_INTERFACE_H_
 #define CARTOGRAPHER_MAPPING_MAP_BUILDER_INTERFACE_H_
 
@@ -101,6 +100,14 @@ class MapBuilderInterface {
   // trajectory_ids.
   virtual std::map<int /* trajectory id in proto */, int /* trajectory id */>
   LoadStateFromFile(const std::string& filename, bool load_frozen_state) = 0;
+
+//
+//
+  // Connects to a remote GRPC server and requests for it's state
+  virtual std::map<int, int> GetRemoteState(io::ProtoStreamReaderInterface* reader,
+                                            bool load_frozen_state,
+                                            const std::string& remote_address) = 0 ;
+
 
   virtual int num_trajectory_builders() const = 0;
 
