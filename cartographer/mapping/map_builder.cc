@@ -118,9 +118,9 @@ MapBuilder::MapBuilder(const proto::MapBuilderOptions& options)
 
 
 
-std::map<int, int> MapBuilder::GetRemoteState(io::ProtoStreamReaderInterface *reader,
-                                                  bool load_frozen_state,
-                                                  const std::string &remote_address) {
+std::map<int, int> MapBuilder::SendStateRemote(io::ProtoStreamReaderInterface *reader,
+                                               bool load_frozen_state,
+                                               const std::string &remote_address) {
 
     LOG(FATAL) << "NO GRPC FLAG, ABORTING";
     std::map<int, int> m = {{0, 0}};

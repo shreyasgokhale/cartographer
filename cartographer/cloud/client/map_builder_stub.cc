@@ -220,9 +220,9 @@ namespace cloud {
         return FromProto(client.response().trajectory_remapping());
     }
 
-    std::map<int, int> MapBuilderStub::GetRemoteState(io::ProtoStreamReaderInterface *reader,
-                                                      bool load_frozen_state,
-                                                      const std::string &remote_address) {
+    std::map<int, int> MapBuilderStub::SendStateRemote(io::ProtoStreamReaderInterface *reader,
+                                                       bool load_frozen_state,
+                                                       const std::string &remote_address) {
 
         google::protobuf::Empty getrequest;
         bool enable_google_auth = false;
@@ -238,7 +238,7 @@ namespace cloud {
 
         // Step one, get proto in WriteStateResponse
 
-        LOG(INFO) << "IN GetRemoteState, Connecting";
+        LOG(INFO) << "Connecting remote node";
 
         async_grpc::Client<handlers::LoadStateSignature> client(remote_client_channel_);
         {
@@ -246,6 +246,7 @@ namespace cloud {
             request.set_client_id(client_id_);
             CHECK(client.Write(request));
         }
+        LOG(INFO) << "Sending Data...";
 
         io::ProtoStreamDeserializer deserializer(reader);
         // Request with the SerializationHeader proto is sent first.
