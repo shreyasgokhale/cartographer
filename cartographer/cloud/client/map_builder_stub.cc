@@ -225,6 +225,7 @@ namespace cloud {
                                                        const std::string &remote_address) {
 
         google::protobuf::Empty getrequest;
+        int retryIntervalSec=5;
         bool enable_google_auth = false;
         bool enable_ssl_encryption = false;
         auto channel_creds =
@@ -241,12 +242,26 @@ namespace cloud {
         LOG(INFO) << "Connecting remote node";
 
         async_grpc::Client<handlers::LoadStateSignature> client(remote_client_channel_);
+
         {
             proto::LoadStateRequest request;
             request.set_client_id(client_id_);
             CHECK(client.Write(request));
         }
-        LOG(INFO) << "Sending Data...";
+
+        if (remote_client_channel_->GetState(true /* try_to_connect */) !=
+            grpc_connectivity_state::GRPC_CHANNEL_READY) {
+            LOG(INFO) << "Cannnot connect to GRPC channel, retrying";
+            std::chrono::system_clock::time_point deadline =
+                    std::chrono::system_clock::now() +
+                    std::chrono::seconds(retryIntervalSec);
+            if (!remote_client_channel_->WaitForConnected(deadline)) {
+                LOG(ERROR) << "Failed connecting to remote server!";
+                std::map<int, int> m = {{0, 0}};
+                return m;
+            }
+        }
+        LOG(INFO) << "Server Found. Sending Data...";
 
         io::ProtoStreamDeserializer deserializer(reader);
         // Request with the SerializationHeader proto is sent first.
@@ -280,6 +295,7 @@ namespace cloud {
             request.set_load_frozen_state(load_frozen_state);
             CHECK(client.Write(request));
         }
+        LOG(INFO) << "Data Sent to " << remote_address;
 
         CHECK(reader->eof());
         CHECK(client.StreamWritesDone());
