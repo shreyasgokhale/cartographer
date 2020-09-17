@@ -104,9 +104,9 @@ class MapBuilderInterface {
 //
 //
   // Connects to a remote GRPC server and requests for it's state
-  virtual std::map<int, int> SendStateRemote(io::ProtoStreamReaderInterface* reader,
-                                             bool load_frozen_state,
-                                             const std::string& remote_address) = 0 ;
+  virtual std::map<int, int>
+    SendStateRemote(io::ProtoStreamReaderInterface *reader, bool load_frozen_state, const std::string &remote_address,
+                    const transform::Rigid3<double>) = 0 ;
 
 
   virtual int num_trajectory_builders() const = 0;

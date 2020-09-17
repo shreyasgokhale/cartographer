@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <search.h>
 #include "cartographer/cloud/client/map_builder_stub.h"
 
 #include "cartographer/cloud/internal/client/pose_graph_stub.h"
@@ -222,7 +223,8 @@ namespace cloud {
 
     std::map<int, int> MapBuilderStub::SendStateRemote(io::ProtoStreamReaderInterface *reader,
                                                        bool load_frozen_state,
-                                                       const std::string &remote_address) {
+                                                       const std::string &remote_address,
+                                                       const transform::Rigid3<double> rigid3) {
 
         google::protobuf::Empty getrequest;
         int retryIntervalSec=5;
@@ -251,7 +253,7 @@ namespace cloud {
 
         if (remote_client_channel_->GetState(true /* try_to_connect */) !=
             grpc_connectivity_state::GRPC_CHANNEL_READY) {
-            LOG(INFO) << "Cannnot connect to GRPC channel, retrying";
+            LOG(INFO) << "Cannot connect to GRPC channel, retrying";
             std::chrono::system_clock::time_point deadline =
                     std::chrono::system_clock::now() +
                     std::chrono::seconds(retryIntervalSec);
@@ -262,6 +264,37 @@ namespace cloud {
             }
         }
         LOG(INFO) << "Server Found. Sending Data...";
+        const auto pose = rigid3;
+        int32 relative_to_trajectory_id = 1;
+
+        if (!pose.IsValid()) {
+            LOG(ERROR) << "Invalid pose argument. Orientation quaternion must be normalized.";
+            std::map<int, int> m = {{0, 0}};
+            return m;
+        }
+
+        // Check if the requested trajectory for the relative initial pose exists.
+//        response.status = TrajectoryStateToStatus(
+//                request.relative_to_trajectory_id,
+//                {TrajectoryState::ACTIVE, TrajectoryState::FROZEN,
+//                 TrajectoryState::FINISHED} /* valid states */);
+//        if (response.status.code != cartographer_ros_msgs::StatusCode::OK) {
+//            LOG(ERROR) << "Can't start a trajectory with initial pose: "
+//                       << response.status.message;
+//            return true;
+//        }
+
+        mapping::proto::InitialTrajectoryPose
+                initial_trajectory_pose;
+        initial_trajectory_pose.set_to_trajectory_id(relative_to_trajectory_id);
+        *initial_trajectory_pose.mutable_relative_pose() =
+                cartographer::transform::ToProto(pose);
+        initial_trajectory_pose.set_timestamp(0);
+
+        ::cartographer::mapping::proto::AllTrajectoryBuilderOptions builderOptions;
+
+
+
 
         io::ProtoStreamDeserializer deserializer(reader);
         // Request with the SerializationHeader proto is sent first.
@@ -282,9 +315,18 @@ namespace cloud {
         // Request with an AllTrajectoryBuilderOptions should be third.
         {
             proto::LoadStateRequest request;
+            builderOptions = deserializer.all_trajectory_builder_options();
+            *builderOptions.mutable_options_with_sensor_ids(0)
+            ->mutable_trajectory_builder_options()->mutable_initial_trajectory_pose()
+                    = initial_trajectory_pose;
+
             *request.mutable_serialized_data()
                     ->mutable_all_trajectory_builder_options() =
-                    deserializer.all_trajectory_builder_options();
+                    builderOptions;
+
+//            *request.mutable_serialized_data()
+//                    ->mutable_all_trajectory_builder_options().
+//                    .mutable_initial_trajectory_pose() = initial_trajectory_pose;
             request.set_load_frozen_state(load_frozen_state);
             CHECK(client.Write(request));
         }

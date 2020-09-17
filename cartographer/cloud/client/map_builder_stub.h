@@ -54,9 +54,9 @@ class MapBuilderStub : public mapping::MapBuilderInterface {
                             const std::string& filename) override;
   std::map<int, int> LoadState(io::ProtoStreamReaderInterface* reader,
                                bool load_frozen_state) override;
-  std::map<int, int> SendStateRemote(io::ProtoStreamReaderInterface* reader,
-                                     bool load_frozen_state,
-                                     const std::string& remote_address) override ;
+  std::map<int, int>
+  SendStateRemote(io::ProtoStreamReaderInterface *reader, bool load_frozen_state, const std::string &remote_address,
+                  const transform::Rigid3<double> rigid3) override ;
   std::map<int, int> LoadStateFromFile(const std::string& filename,
                                        bool load_frozen_state) override;
   int num_trajectory_builders() const override;
